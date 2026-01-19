@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Masters - Laxmira</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+</head>
+<body class="bg-gray-100">
+
+<div id="header"></div>
+
+<div class="p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+
+  <!-- Categories -->
+  <div class="bg-white p-4 rounded shadow">
+    <h3 class="text-xl font-semibold mb-2">📂 Categories</h3>
+    <div class="flex gap-2 mb-3">
+      <input id="catInput" class="border p-2 flex-1 rounded" placeholder="Add category">
+      <button onclick="addItem('categories','catInput')" class="bg-blue-600 text-white px-3 rounded">Add</button>
+    </div>
+    <ul id="categories" class="space-y-1 text-sm"></ul>
+  </div>
+
+  <!-- Colors -->
+  <div class="bg-white p-4 rounded shadow">
+    <h3 class="text-xl font-semibold mb-2">🎨 Colors</h3>
+    <div class="flex gap-2 mb-3">
+      <input id="colorInput" class="border p-2 flex-1 rounded" placeholder="Add color">
+      <button onclick="addItem('colors','colorInput')" class="bg-blue-600 text-white px-3 rounded">Add</button>
+    </div>
+    <ul id="colors" class="space-y-1 text-sm"></ul>
+  </div>
+
+  <!-- Fabrics -->
+  <div class="bg-white p-4 rounded shadow">
+    <h3 class="text-xl font-semibold mb-2">🧵 Fabrics</h3>
+    <div class="flex gap-2 mb-3">
+      <input id="fabricInput" class="border p-2 flex-1 rounded" placeholder="Add fabric">
+      <button onclick="addItem('fabrics','fabricInput')" class="bg-blue-600 text-white px-3 rounded">Add</button>
+    </div>
+    <ul id="fabrics" class="space-y-1 text-sm"></ul>
+  </div>
+
+</div>
+
+<div id="footer"></div>
+
+<script>
+const token = localStorage.getItem("token");
+if (!token) window.location.href = "/";
+
+async function loadLayout() {
+  try {
+    const header = await fetch("/components/header.html").then(r => r.text());
+    const footer = await fetch("/components/footer.html").then(r => r.text());
+    document.getElementById("header").innerHTML = header;
+    document.getElementById("footer").innerHTML = footer;
+
+    // Set year after footer is injected
+    const y = document.getElementById("year");
+    if (y) y.textContent = new Date().getFullYear();
+    
+    // Ensure Iconify processes dynamically loaded icons
+    if (window.Iconify) {
+      window.Iconify.scan();
+    }
+    
+    highlightActiveMenu();
+  } catch (error) {
+    console.error("Failed to load layout:", error);
+  }
+}
+
+function highlightActiveMenu() {
+  const path = window.location.pathname;
+  const map = {
+    "/dashboard.html": "nav-dashboard",
+    "/products.html": "nav-products",
+    "/sales.html": "nav-sales",
+    "/expenses.html": "nav-expenses",
+    "/masters.html": "nav-masters"
+  };
+  const id = map[path];
+  if (id) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.classList.add("underline");
+    }
+  }
+}
+
+loadLayout();
+
+// ----------------------
+
+async function load(type) {
+  try {
+    const res = await fetch(`/api/masters/${type}`);
+    const data = await res.json();
+    const ul = document.getElementById(type);
+    ul.innerHTML = "";
+
+    if (!data.length) {
+      ul.innerHTML = `<li class="text-gray-500 text-sm">No data found.</li>`;
+      return;
+    }
+
+    data.forEach(i => {
+      const li = document.createElement("li");
+      li.className = "flex justify-between items-center border p-2 rounded";
+      li.innerHTML = `
+        <span>${i.name}</span>
+        <button class="text-red-600 hover:text-red-800" onclick="delItem('${type}',${i.id})">✖</button>
+      `;
+      ul.appendChild(li);
+    });
+  } catch (e) {
+    console.error(e);
+    alert("Failed to load " + type);
+  }
+}
+
+async function addItem(type, inputId) {
+  const el = document.getElementById(inputId);
+  const name = el.value.trim();
+  if (!name) return alert("Enter a value");
+
+  const res = await fetch(`/api/masters/${type}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name })
+  });
+
+  if (!res.ok) {
+    const msg = await res.text();
+    return alert(msg || "Already exists");
+  }
+
+  el.value = "";
+  load(type);
+}
+
+async function delItem(type, id) {
+  if (!confirm("Delete this item?")) return;
+  await fetch(`/api/masters/${type}/${id}`, { method: "DELETE" });
+  load(type);
+}
+
+["categories","colors","fabrics"].forEach(load);
+</script>
+
+</body>
+</html>

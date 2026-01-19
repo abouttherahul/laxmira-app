@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>LAXMIRA - Invoice</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/styles.css">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Elsie+Swash+Caps:wght@400;900&display=swap" rel="stylesheet">
+
+  <style>
+    @media print {
+      body { background: white; }
+      .no-print { display: none; }
+      #invoice { box-shadow: none; border: none; }
+      a { text-decoration: none; pointer-events: none; }
+    }
+  </style>
+</head>
+<body class="bg-gray-100 p-4 font-sans">
+
+  <div id="invoice" class="max-w-3xl mx-auto bg-white p-8 shadow-lg rounded-lg">
+
+    <div class="text-center mb-6">
+        <a href="/dashboard.html">
+            <img src="/uploads/favicon.png" class="w-14 mx-auto block" alt="LAXMIRA">
+        </a>
+        
+        <h1 class="text-3xl tracking-wider" 
+            style="color: #e1ba66; font-family: 'Elsie Swash Caps', serif;">
+            LAXMIRA
+        </h1>
+        
+        <p class="text-sm" style="color: #e1ba66;">Wear with Blessing</p>
+        <p class="text-sm text-gray-500">Phulera, Near Jaipur</p>
+    </div>
+
+    <hr class="border-gray-300 mb-6">
+
+    <div class="flex justify-between items-end mb-6">
+      <h2 class="text-2xl font-bold text-gray-700">TAX INVOICE</h2>
+      <div class="text-right">
+        <p class="text-sm text-gray-500">Invoice No:</p>
+        <p class="font-bold text-lg text-gray-800">#<span id="invId">...</span></p>
+      </div>
+    </div>
+
+    <div class="flex justify-between bg-gray-50 p-4 rounded border border-gray-200 text-sm mb-6">
+      <div>
+        <p class="text-gray-500 uppercase text-xs font-bold mb-1">Billed To:</p>
+        <p class="font-bold text-gray-800 text-lg" id="custName">-</p>
+        <p id="custPhone">-</p>
+        <p id="custAddr" class="text-gray-600 italic">-</p>
+      </div>
+      <div class="text-right">
+        <p class="text-gray-500 uppercase text-xs font-bold mb-1">Date:</p>
+        <p class="font-bold text-gray-800" id="invDate">-</p>
+      </div>
+    </div>
+
+    <!-- 🔥 MULTI-PRODUCT TABLE -->
+    <table class="w-full border-collapse text-sm mb-6" id="itemsTable">
+      <thead class="bg-gray-800 text-white">
+        <tr>
+          <th class="p-3 text-left rounded-tl">Product</th>
+          <th class="p-3 text-right">MRP</th>
+          <th class="p-3 text-right">Sale Price</th>
+          <th class="p-3 text-right">Disc.</th>
+          <th class="p-3 text-center">Qty</th>
+          <th class="p-3 text-right rounded-tr">Total</th>
+        </tr>
+      </thead>
+      <tbody class="border border-gray-200" id="itemsBody">
+        <!-- Items will be populated by JS -->
+      </tbody>
+    </table>
+
+    <div class="flex justify-end">
+      <div class="w-1/2">
+        <div class="flex justify-between py-2 border-b border-gray-100 text-sm">
+          <span class="text-gray-600">Subtotal (MRP):</span>
+          <span class="font-medium">₹<span id="subTotal">0</span></span>
+        </div>
+        <div class="flex justify-between py-2 border-b border-gray-100 text-sm text-green-600">
+          <span>Total Savings:</span>
+          <span>- ₹<span id="totalSavings">0</span></span>
+        </div>
+        <div class="flex justify-between py-3 text-xl font-bold text-gray-800">
+          <span>Grand Total:</span>
+          <span>₹<span id="grandTotal">0</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-8 text-center border-t border-dashed border-gray-300 pt-4">
+      <p class="text-sm text-gray-600 font-medium mb-2">Thank you for shopping with <b>LAXMIRA</b> ❤️</p>
+      
+      <div class="text-xs text-gray-500 space-y-1">
+        <p class="font-bold text-red-600">NO RETURNS / NO CASH REFUNDS</p>
+        <p>Exchange is allowed only on presentation of the <span class="font-bold text-gray-700">Original Bill</span>.</p>
+        <p>(Items must be in original condition with tags)</p>
+      </div>
+    </div>
+
+    <div class="flex justify-center gap-3 mt-8 no-print">
+      <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded shadow transition">
+        Print Invoice
+      </button>
+      <button onclick="window.close()" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded shadow transition">
+        Close
+      </button>
+    </div>
+
+  </div>
+
+  <script>
+    async function loadInvoice() {
+      const params = new URLSearchParams(window.location.search);
+      
+      // 🔥 Support both old sale_id and new order_id
+      let orderId = params.get("order_id") || params.get("sale_id");
+      
+      if (!orderId) {
+        document.body.innerHTML = `<h2 class="text-center text-red-500 mt-10">❌ Invoice ID missing</h2>`;
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/sales/${orderId}`);
+        if (!res.ok) throw new Error(`Invoice not found: ${res.status}`);
+        
+        const data = await res.json();
+        console.log("📄 Invoice data:", data);
+
+        // 1. Basic Info (from order)
+        document.getElementById("invId").textContent = data.id;
+        document.getElementById("invDate").textContent = data.date;
+        document.getElementById("custName").textContent = data.customer_name || "Walk-in Customer";
+        document.getElementById("custPhone").textContent = data.customer_phone || "-";
+        document.getElementById("custAddr").textContent = data.customer_address || "";
+
+        // 2. 🔥 Multi-product items table
+        const tbody = document.getElementById("itemsBody");
+        tbody.innerHTML = ""; // Clear
+
+        let subtotal = 0;
+        let totalSavings = 0;
+
+        // Handle single item (old format) or multiple items (new format)
+        const items = data.items || [{
+          product_name: data.product_name,
+          sku: data.sku,
+          qty: data.qty,
+          mrp: data.sell_price,
+          final_price: data.total,
+          discount_percent: 0
+        }];
+
+        items.forEach(item => {
+          const qty = Number(item.qty);
+          const mrp = Number(item.mrp);
+          const finalPrice = Number(item.final_price);
+          
+          // Calculate discount for this item
+          const itemMrpTotal = mrp * qty;
+          const itemDiscount = itemMrpTotal - finalPrice;
+          const discountPer = itemMrpTotal > 0 ? (itemDiscount / itemMrpTotal * 100) : 0;
+
+          subtotal += itemMrpTotal;
+          totalSavings += itemDiscount;
+
+          // Create table row
+          const row = document.createElement("tr");
+          row.className = "border-b border-gray-100";
+          row.innerHTML = `
+            <td class="p-3">
+              <div class="font-bold text-gray-800">${item.product_name}</div>
+              <div class="text-xs text-gray-500">SKU: ${item.sku}</div>
+            </td>
+            <td class="p-3 text-right text-gray-500 line-through">₹${mrp.toFixed(2)}</td>
+            <td class="p-3 text-right font-medium">₹${(finalPrice/qty).toFixed(2)}</td>
+            <td class="p-3 text-right text-red-600 text-xs font-bold">
+              ${discountPer.toFixed(1)}%<br>
+              <span class="font-normal text-gray-400">(-₹${itemDiscount.toFixed(2)})</span>
+            </td>
+            <td class="p-3 text-center">${qty}</td>
+            <td class="p-3 text-right font-bold text-gray-800 text-base">₹${finalPrice.toFixed(2)}</td>
+          `;
+          tbody.appendChild(row);
+        });
+
+        // 3. Fill totals
+        document.getElementById("subTotal").textContent = subtotal.toFixed(2);
+        document.getElementById("totalSavings").textContent = totalSavings.toFixed(2);
+        document.getElementById("grandTotal").textContent = data.total_amount.toFixed(2);
+
+      } catch (err) {
+        console.error("❌ Invoice error:", err);
+        document.body.innerHTML = `<h2 class="text-center text-red-600 mt-10">❌ Error: ${err.message}</h2>`;
+      }
+    }
+
+    loadInvoice();
+  </script>
+
+</body>
+</html>

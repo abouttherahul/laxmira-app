@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Laxmira Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/styles.css">
+
+    <!-- Local vendor files -->
+    <script src="/vendor/iconify-icon.min.js"></script>
+    <script src="/vendor/chart.umd.js"></script>
+
+    <!-- Your scripts -->
+    <script src="/js/api.js" defer></script>
+    <script src="/js/dashboard.js" defer></script>
+    <script src="/js/layout.js" defer></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", async () => {
+        await loadLayout();
+        initDashboard();
+      });
+    </script>
+
+  </head>
+  <body class="bg-gray-100 min-h-screen">
+
+    <!-- Common Header -->
+    <div id="header"></div>
+
+    <div class="w-full p-4 space-y-6 pb-20">
+      <!-- KPI Row -->
+      <div class="grid grid-cols-1 lg:grid-cols-6 gap-4">
+        <!-- Welcome Card -->
+        <div class="lg:col-span-2">
+          <div
+            class="bg-white shadow-lg rounded-xl p-6 h-full relative overflow-hidden"
+            style="background-image: url('/uploads/welcome.jpg'); background-size: contain; background-position: right bottom; background-repeat: no-repeat; background-color: #f8fafc;">
+            <div
+              class="absolute inset-0 bg-gradient-to-r from-white/80 to-transparent"></div>
+            <div class="relative z-10">
+              <h1
+                class="text-3xl font-bold flex items-center gap-3 mb-4 text-gray-800 drop-shadow-lg">
+                Welcome Rahul
+                <iconify-icon icon="fluent-emoji-flat:waving-hand-light"
+                  class="text-4xl"></iconify-icon>
+              </h1>
+              <p
+                class="text-lg text-gray-700 drop-shadow-lg leading-relaxed w-80">Your
+                Laxmira store management system is ready.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI Cards -->
+        <div
+          class="lg:col-span-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <a href="/products.html"
+            class="group bg-gradient-to-br from-blue-50 to-blue-100 shadow-lg rounded-xl p-6 hover:shadow-xl transition-all hover:-translate-y-1 block">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="bg-blue-500 p-3 rounded-xl text-white shadow-lg">
+                <iconify-icon icon="game-icons:cardboard-box"
+                  class="text-2xl"></iconify-icon>
+              </div>
+              <div>Products</div>
+            </div>
+            <div class="text-3xl font-bold text-blue-700" id="products">0</div>
+          </a>
+
+          <a href="/sales.html"
+            class="group bg-gradient-to-br from-orange-50 to-orange-100 shadow-lg rounded-xl p-6 hover:shadow-xl transition-all hover:-translate-y-1 block">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="bg-orange-500 p-3 rounded-xl text-white shadow-lg">
+                <iconify-icon icon="flat-color-icons:sales-performance"
+                  class="text-2xl"></iconify-icon>
+              </div>
+              <div>Sales</div>
+            </div>
+            <div class="text-3xl font-bold text-orange-700" id="sales">₹0</div>
+          </a>
+
+          <a href="/expenses.html"
+            class="group bg-gradient-to-br from-red-50 to-red-100 shadow-lg rounded-xl p-6 hover:shadow-xl transition-all hover:-translate-y-1 block">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="bg-red-500 p-3 rounded-xl text-white shadow-lg">
+                <iconify-icon icon="streamline-ultimate-color:money-bag-dollar"
+                  class="text-2xl"></iconify-icon>
+              </div>
+              <div>Expenses</div>
+            </div>
+            <div class="text-3xl font-bold text-red-700" id="expenses">₹0</div>
+          </a>
+
+          <div
+            class="group bg-gradient-to-br from-emerald-50 to-emerald-100 shadow-lg rounded-xl p-6 hover:shadow-xl transition-all hover:-translate-y-1">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="bg-emerald-500 p-3 rounded-xl text-white shadow-lg">
+                <iconify-icon icon="mdi:finance"
+                  class="text-2xl"></iconify-icon>
+              </div>
+              <div>Profit</div>
+            </div>
+            <div class="text-3xl font-bold" id="profit">₹0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Latest Sales Table -->
+        <div class="bg-white shadow-xl rounded-2xl p-6">
+          <h3
+            class="text-2xl font-bold mb-6 flex items-center gap-3 text-gray-800">
+            🛒 Latest Sold Products
+          </h3>
+          <div class="overflow-x-auto">
+            <table class="w-full border-collapse">
+              <thead class="bg-gray-50 rounded-xl">
+                <tr>
+                  <th
+                    class="border-b border-gray-200 p-4 text-left font-semibold text-gray-700">Product</th>
+                  <th
+                    class="border-b border-gray-200 p-3 text-center font-semibold text-gray-700">Qty</th>
+                  <th
+                    class="border-b border-gray-200 p-3 text-right font-semibold text-gray-700">Total</th>
+                  <th
+                    class="border-b border-gray-200 p-3 text-right font-semibold text-gray-700">Date</th>
+                </tr>
+              </thead>
+              <tbody id="latestProducts" class="divide-y divide-gray-100">
+                <tr><td colspan="4"
+                    class="text-center p-12 text-gray-400 text-lg">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Charts Column -->
+        <div class="space-y-6">
+          <!-- Chart Cards -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 h-80">
+            <!-- Sales Chart -->
+            <div class="bg-white shadow-xl rounded-2xl p-6">
+              <h4
+                class="text-xl font-bold mb-4 text-gray-800 flex items-center gap-2">📈
+                Sales Trend</h4>
+              <div class="h-48">
+                <canvas id="salesChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Expenses Chart -->
+            <div class="bg-white shadow-xl rounded-2xl p-6">
+              <h4
+                class="text-xl font-bold mb-4 text-gray-800 flex items-center gap-2">💸
+                Expenses</h4>
+              <div class="h-48">
+                <canvas id="expensesChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Profit + Top Customers -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Profit Chart -->
+            <div class="bg-white shadow-xl rounded-2xl p-6 md:col-span-2">
+              <h4
+                class="text-xl font-bold mb-4 text-gray-800 flex items-center gap-2">💰
+                Profit Trend</h4>
+              <div class="h-48">
+                <canvas id="profitChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Top Customers -->
+            <div
+              class="bg-gradient-to-br from-indigo-50 to-purple-50 shadow-xl rounded-2xl p-6">
+              <h4
+                class="text-xl font-bold mb-4 text-gray-800 flex items-center gap-2">👥
+                Top Customers</h4>
+              <div id="topCustomers" class="space-y-3 max-h-48 overflow-y-auto">
+                <div class="text-center p-12 text-gray-400">Loading...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Common Footer -->
+    <div id="footer"></div>
+
+  </body>
+</html>

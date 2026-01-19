@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles */
+.mainColor {
+  color: #e2bb67;
+}
+
+#header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+

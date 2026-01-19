@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Customers - Laxmira</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/styles.css">
+    <!-- Local vendor files -->
+    <script src="/vendor/iconify-icon.min.js"></script>
+    <script src="/vendor/chart.umd.js"></script>
+
+    <!-- Your scripts -->
+    <script src="/js/api.js" defer></script>
+    <script src="/js/customers.js" defer></script>
+    <script src="/js/layout.js" defer></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", async () => {
+        await loadLayout();
+        initCustomers();
+      });
+    </script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+<div id="header"></div>
+
+<div class="w-full p-6 lg:p-8 h-[90vh]">
+
+  <div class="grid grid-cols-12 gap-6 h-full">
+    
+    <!-- LEFT: Customer List -->
+    <div class="col-span-12 lg:col-span-4 bg-white shadow-2xl rounded-3xl flex flex-col h-full border border-gray-100 overflow-hidden">
+      <!-- Header -->
+      <div class="p-6 border-b border-gray-100 bg-gradient-to-br from-white to-gray-50">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-2xl font-bold flex items-center gap-2 text-gray-800">
+            <div class="bg-blue-100 p-2 rounded-xl text-blue-600">
+              <iconify-icon icon="mdi:account-group" class="text-2xl"></iconify-icon>
+            </div>
+            Customers
+          </h3>
+          
+          <button onclick="openModal()" 
+            class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold px-4 py-2 rounded-xl flex items-center gap-2 transition shadow-lg hover:shadow-blue-200">
+            <iconify-icon icon="mdi:account-plus" class="text-lg"></iconify-icon> Add New
+          </button>
+        </div>
+
+        <div class="relative group">
+          <input id="search" class="w-full border-2 border-gray-200 rounded-xl p-3 pl-10 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all bg-white"
+            placeholder="Search name or phone..." oninput="renderCustomers()">
+          <iconify-icon icon="mdi:magnify" class="absolute left-3 top-3.5 text-gray-400 group-focus-within:text-blue-500 text-xl transition-colors"></iconify-icon>
+        </div>
+      </div>
+
+      <!-- List -->
+      <ul id="customerList" class="divide-y divide-gray-50 overflow-y-auto flex-1 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent"></ul>
+    </div>
+
+    <!-- RIGHT: History Panel -->
+    <div class="col-span-12 lg:col-span-8 bg-white shadow-2xl rounded-3xl flex flex-col h-full border border-gray-100 overflow-hidden">
+      
+      <!-- Header -->
+      <div class="p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white flex justify-between items-center">
+        <div>
+          <h3 id="historyTitle" class="text-2xl font-bold text-gray-800 mb-1">Select a Customer</h3>
+          <p id="historySubtitle" class="text-sm text-gray-500 flex items-center gap-1">
+            <iconify-icon icon="mdi:information-outline"></iconify-icon> View past orders and invoices
+          </p>
+        </div>
+        <div id="customerStats" class="hidden text-right flex gap-3">
+          <div class="bg-green-50 px-4 py-2 rounded-xl border border-green-100">
+            <div class="text-xs text-green-600 font-bold uppercase tracking-wider">Total Spent</div>
+            <div class="text-lg font-bold text-green-700">₹<span id="statTotal">0</span></div>
+          </div>
+          <div class="bg-blue-50 px-4 py-2 rounded-xl border border-blue-100">
+            <div class="text-xs text-blue-600 font-bold uppercase tracking-wider">Orders</div>
+            <div class="text-lg font-bold text-blue-700"><span id="statOrders">0</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="overflow-y-auto flex-1 p-0">
+        <table class="w-full border-collapse">
+          <thead class="bg-gray-50 sticky top-0 z-10 shadow-sm">
+            <tr>
+              <th class="p-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Date</th>
+              <th class="p-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Product</th>
+              <th class="p-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Details</th>
+              <th class="p-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Qty</th>
+              <th class="p-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Total</th>
+              <th class="p-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Action</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody" class="divide-y divide-gray-50">
+            <tr>
+              <td colspan="6" class="p-20 text-center text-gray-400">
+                <iconify-icon icon="mdi:account-search-outline" class="text-6xl mb-4 text-gray-300"></iconify-icon>
+                <div class="text-lg font-medium">Select a customer from the list</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD CUSTOMER MODAL -->
+<div id="addModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex justify-center items-center z-50 transition-all">
+  <div class="bg-white p-8 rounded-3xl shadow-2xl w-96 transform transition-all scale-100 border border-gray-100">
+    <h3 class="text-2xl font-bold mb-6 flex items-center gap-3 text-gray-800">
+      <div class="bg-blue-100 p-2 rounded-xl text-blue-600">
+        <iconify-icon icon="mdi:account-plus"></iconify-icon>
+      </div>
+      New Customer
+    </h3>
+    
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-bold text-gray-700 mb-1 ml-1">Full Name *</label>
+        <input id="newName" class="w-full border-2 border-gray-200 rounded-xl p-3 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all outline-none" placeholder="e.g. Rahul Sharma">
+      </div>
+
+      <div>
+        <label class="block text-sm font-bold text-gray-700 mb-1 ml-1">Phone Number *</label>
+        <input id="newPhone" type="number" class="w-full border-2 border-gray-200 rounded-xl p-3 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all outline-none" placeholder="e.g. 9876543210">
+      </div>
+
+      <div>
+        <label class="block text-sm font-bold text-gray-700 mb-1 ml-1">Address (Optional)</label>
+        <textarea id="newAddress" class="w-full border-2 border-gray-200 rounded-xl p-3 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all outline-none resize-none" rows="3" placeholder="Enter full address..."></textarea>
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-3 mt-8">
+      <button onclick="closeModal()" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl font-bold transition">Cancel</button>
+      <button onclick="saveNewCustomer()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg hover:shadow-blue-200 transition">Save Customer</button>
+    </div>
+  </div>
+</div>
+
+<div id="footer"></div>
+
+
+
+</body>
+</html>

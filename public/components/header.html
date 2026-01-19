@@ -1,0 +1,79 @@
+<header class="bg-gray-900 text-white shadow-md sticky top-0 z-50">
+  <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+
+    <div class="logo">
+      <a href="/dashboard.html">
+        <img src="/uploads/laxmira.png" class="h-14 w-auto object-contain hover:opacity-90 transition" alt="LAXMIRA">
+      </a>
+    </div>
+
+    <div class="flex items-center gap-6">
+      
+      <div class="relative group">
+        <input id="globalSearch"
+          class="bg-gray-800 text-white border border-gray-700 rounded-full pl-4 pr-10 py-1.5 text-sm focus:outline-none focus:bg-gray-700 focus:border-gray-500 w-48 transition-all focus:w-64"
+          placeholder="Search SKU or Name..."
+          onkeydown="if(event.key==='Enter') globalSearchProduct()" />
+        
+        <button onclick="globalSearchProduct()"
+          class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition">
+          <iconify-icon icon="mdi:magnify" class="text-lg"></iconify-icon>
+        </button>
+      </div>
+
+      <nav class="flex items-center gap-6 text-sm font-medium text-gray-300">
+        <a id="nav-dashboard" href="/dashboard.html" class="hover:text-white transition">Dashboard</a>
+        <a id="nav-products" href="/products.html" class="hover:text-white transition">Products</a>
+        <a id="nav-sales" href="/sales.html" class="hover:text-white transition">Sales</a>
+        <a id="nav-expenses" href="/expenses.html" class="hover:text-white transition">Expenses</a>
+        <a id="nav-customers" href="/customers.html" class="hover:text-white transition">Customers</a>
+        
+        <button onclick="logout()" 
+          class="text-red-400 hover:text-red-500 hover:bg-gray-800 p-2 rounded-full transition flex items-center justify-center" 
+          title="Logout">
+          <iconify-icon icon="mdi:logout" class="text-xl"></iconify-icon>
+        </button>
+      </nav>
+      
+    </div>
+  </div>
+</header>
+
+<script>
+  // 1. 📍 Highlight Active Link
+  (function highlightActiveLink() {
+    const path = window.location.pathname;
+    const navMap = {
+      "/dashboard.html": "nav-dashboard",
+      "/products.html": "nav-products",
+      "/sales.html": "nav-sales",
+      "/expenses.html": "nav-expenses",
+      "/customers.html": "nav-customers"
+    };
+
+    const activeId = navMap[path];
+    if (activeId) {
+      const el = document.getElementById(activeId);
+      if (el) {
+        el.classList.add("text-yellow-400", "font-bold", "text-white");
+        el.classList.remove("text-gray-300");
+      }
+    }
+  })();
+
+  // 2. 🔍 Global Search Function
+  function globalSearchProduct() {
+    const query = document.getElementById("globalSearch").value.trim();
+    if (query) {
+      window.location.href = `/products.html?search=${encodeURIComponent(query)}`;
+    }
+  }
+
+  // 3. 🚪 Logout Function
+  function logout() {
+    if (confirm("Are you sure you want to logout?")) {
+      localStorage.removeItem("token");
+      window.location.href = "/";
+    }
+  }
+</script>
