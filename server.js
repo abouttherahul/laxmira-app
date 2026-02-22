@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const authMiddleware = require("./middleware/auth");
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.get("/", (req, res) => {
 
 // API routes (NO AUTH BLOCKING)
 app.use("/api/auth", require("./routes/auth"));
+app.use("/api", authMiddleware);
 app.use("/api/products", require("./routes/products"));
 app.use("/api/sales", require("./routes/sales"));
 app.use("/api/expenses", require("./routes/expenses"));

@@ -28,6 +28,8 @@
   loadLayout();
 
   const token = localStorage.getItem("token");
+
+
   if (!token) window.location.href = "/";
 
   const dateEl = document.getElementById("date");
@@ -57,7 +59,7 @@
     if (category && category !== "") params.append("category", category);
 
     try {
-      const res = await fetch("/api/expenses?" + params.toString());
+      const res = await apiFetch("/api/expenses?" + params.toString());
       if (!res.ok) throw new Error("Failed to fetch");
       
       const data = await res.json();
@@ -135,7 +137,7 @@
         method = "PUT";
       }
 
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ date, category, amount, note })

@@ -34,7 +34,7 @@ let selectedId = null;
 
 async function loadCustomers() {
   try {
-    const res = await fetch("/api/customers");
+    const res = await apiFetch("/api/customers");
     if (!res.ok) throw new Error("Failed to load customers");
     customers = await res.json();
     renderCustomers();
@@ -97,7 +97,7 @@ async function selectCustomer(c) {
   tbody.innerHTML = `<tr><td colspan="6" class="p-10 text-center text-gray-400"><iconify-icon icon="mdi:loading" class="animate-spin text-3xl"></iconify-icon></td></tr>`;
 
   try {
-    const res = await fetch(`/api/customers/${c.id}/history`);
+    const res = await apiFetch(`/api/customers/${c.id}/history`);
     const data = await res.json();
     tbody.innerHTML = "";
 
@@ -151,7 +151,7 @@ async function saveNewCustomer() {
   if(!name || !phone) return alert("Please enter Name and Phone Number");
 
   try {
-    const res = await fetch("/api/customers", {
+    const res = await apiFetch("/api/customers", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, phone, address })

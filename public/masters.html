@@ -98,7 +98,7 @@ loadLayout();
 
 async function load(type) {
   try {
-    const res = await fetch(`/api/masters/${type}`);
+    const res = await apiFetch(`/api/masters/${type}`);
     const data = await res.json();
     const ul = document.getElementById(type);
     ul.innerHTML = "";
@@ -128,7 +128,7 @@ async function addItem(type, inputId) {
   const name = el.value.trim();
   if (!name) return alert("Enter a value");
 
-  const res = await fetch(`/api/masters/${type}`, {
+  const res = await apiFetch(`/api/masters/${type}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name })
@@ -145,7 +145,7 @@ async function addItem(type, inputId) {
 
 async function delItem(type, id) {
   if (!confirm("Delete this item?")) return;
-  await fetch(`/api/masters/${type}/${id}`, { method: "DELETE" });
+  await apiFetch(`/api/masters/${type}/${id}`, { method: "DELETE" });
   load(type);
 }
 

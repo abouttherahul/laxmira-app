@@ -39,7 +39,7 @@
 
   async function loadProducts() {
     try {
-      const res = await fetch("/api/products");
+      const res = await apiFetch("/api/products");
       products = await res.json();
     } catch(e) { console.error(e); }
   }
@@ -225,7 +225,7 @@
     }
 
     try {
-      const res = await fetch("/api/sales", {
+      const res = await apiFetch("/api/sales", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ date, customer: { name: cname, phone: cphone, address: caddr }, items })
@@ -258,7 +258,7 @@
     if (to) params.append("to", to);
     if (product) params.append("product", product);
 
-    const res = await fetch("/api/sales?" + params.toString());
+    const res = await apiFetch("/api/sales?" + params.toString());
     const data = await res.json();
     const tbody = document.getElementById("tbody");
     tbody.innerHTML = "";
